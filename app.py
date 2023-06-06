@@ -10,18 +10,24 @@ import json
 import streamlit as st
 from st_aggrid import AgGrid
 
-BEST_MOVIES = pd.read_csv("best_movies.csv")
+from utils import model
+from utils import recommend_neighborhood
+
+MATRIX = pd.read_csv("./data/user_item_matrix.csv", index_col=0)
+
+MOVIES= pd.read_csv("./data/movies.csv")
+MOVIES.rename(
+    index=lambda x: x+1,
+    inplace=True
+    )
+
+BEST_MOVIES = pd.read_csv("./data/best_movies.csv")
 BEST_MOVIES.rename(
     index=lambda x: x+1,
     inplace=True
     )
-TITLES = ["---"] + list(BEST_MOVIES['title'].sort_values()) 
 
-with open('Nearest_Neighbors.pkl', 'rb') as file: # rb read as binary 
-    DISTANCE_MODEL = pickle.load(file)
-
-with open('model_nmf.pkl', 'rb') as file:
-    NMF_MODEL = pickle.load(file)
+TITLES = ["---"] + list(MOVIES['title'].sort_values()) 
 
 
 # sidebar
@@ -156,6 +162,7 @@ elif page == "rate some movies":
             )
         st.write("")
         st.write("user query saved successfully")
+        st.write(user_query)
 
 ##########################################################
 # Movie Recommendations
@@ -164,16 +171,19 @@ else:
     # title
     st.title("Movie Recommendations")
     col1,col2,col3,col4,col5 = st.columns([1,5,1,5,1])
+    # with col2:
+    #     recommender = st.radio(
+    #         "recommender type",
+    #         ["NMF Recommender","Distance Recommender"]
+    #         )
     with col2:
-        recommender = st.radio(
-            "recommender type",
-            ["NMF Recommender","Distance Recommender"]
-            )
-    with col4:
         st.write("###")
-        recommend_button = st.button(label="recommed movies")
+        recommend_button = st.button(label="get recommended movies")
 
     #load user query
     user_query = json.load(open("user_query.json"))
-    
-    
+    st.write(user_query)
+
+    if recommend_button:
+        recommendation = recommend_neighborhood(user_query, model, MOVIES, k=10)
+        st.write(recommendation[['title', 'genres']])
