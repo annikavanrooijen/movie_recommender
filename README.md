@@ -1,5 +1,4 @@
-# Recommender
-Movie-Recommender-Systems
+# Movie-Recommender-System
 
 In this project I built a web application that showcases a movie recommendation on Neighborhood-based Collaborative Filtering.
 
